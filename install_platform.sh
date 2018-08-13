@@ -1,6 +1,7 @@
 #!/bin/bash
 
 
+
 function installeroutput {
   echo " -- AdaptiveMD INSTALLER |||  $1"
 }
@@ -10,64 +11,76 @@ CWD=`pwd`
 
 ###############################################################################
 #                           Install Configuration                             #
-# variables that set the install locations for different components of        #
-# the AdaptiveMD platform                                                     #
+# variables to set locations and configuration for different components of    #
+# the AdaptiveMD platform - higher ~ more likely needs modification           #
 ###############################################################################
 
-# The installer will check for pre-existing mongod and obort if found
-INSTALL_MONGODB=/lustre/or-hydra/cades-bsd/osz/
-FOLDER_MONGODB=mongodb/
-VERSION_MONGODB=3.3.0
-ADDRESS_MONGODB=
-
-# Add the adaptivemd environment variables?
+# PREFIX to all stored environment variables
+#   - useful for multiple installations
+#   - probably don't need to modify these ones
+ENV_BASE=ADAPTIVEMD
 ADD_ENV_VARS=True
+ENV_VARS_OUT=~/.bashrc
 ENV_LOGLEVEL=info
 
 # Use virtualenv or conda? choose 1
 ENV_TYPE='virtualenv'
+# TODO conda installation setup...
+# TODO taskenv option for separate components
 
-# PREFIX to all stored environment variables
-#   - useful for multiple installations
-ENV_BASE=ADAPTIVEMD
+# Leave blank if you won't use RADICAL-Pilot
+RADICAL_PILOT='radical.pilot'
 
-#
-INSTALL_HOME=/lustre/or-hydra/cades-bsd/$USER/
+# Environment preparations
+#   - can do something like this here
+LOADS[0]="module swap PrgEnv-pgi PrgEnv-gnu"
+LOADS[1]="module load python"
+LOADS[2]="module load cudatoolkit"
+
+# Install locations for all the components
+#   - Everything will go under INSTALL_HOME
+#     except the MongoDB
+PROJFOLDER=bip149
+INSTALL_HOME=$PROJWORK/$PROJFOLDER/$USER/
 FOLDER_INSTALL=admd/
 FOLDER_ENV=admdenv/
 FOLDER_PACKAGES=packages/
 FOLDER_PROJECTS=projects/
 
-#LOAD_PYTHON="module load python/2.7.13"
-LOAD_PYTHON="echo \"Using default Python `which python`\""
-LOAD_CUDA="module load cuda/7.5"
-#LOAD_CUDA="module load cuda/9.2"
-
-ADAPTIVEMD_PKG=jrossyra/adaptivemd.git
-ADAPTIVEMD_BRANCH=rp_integration
-
-R_UTILS_PKG=radical-cybertools/radical.utils.git
-R_UTILS_BRANCH=devel
-
-R_SAGA_PKG=radical-cybertools/saga-python.git
-R_SAGA_BRANCH=devel
-
-R_PILOT_PKG=radical-cybertools/radical.pilot.git
-R_PILOT_BRANCH=devel
-
-# USING VIRTUALENV as environment
+# IF USING VIRTUALENV as environment,
 # User must download OpenMM-Linux precompiled binaries
-# and untar it. This just tells the script where these
+# This just tells the script where these
 # are located on the filesystem.
 # This one came from:
 #https://simtk.org/frs/download_confirm.php/file/4904/OpenMM-7.0.1-Linux.zip?group_id=161
-OPENMM_LOC=$HOME
+OPENMM_LOC=$INSTALL_HOME
 FOLDER_OPENMM=OpenMM-7.0.1-Linux
 OPENMM_LIBRARY_PREFIX=lib/
 OPENMM_PLUGIN_PREFIX=lib/plugins/
-OPENMM_INSTALL_LOC=$INSTALL_HOME/$FOLDER_INSTALL/$FOLDER_PKG/openmm
+OPENMM_INSTALL_LOC=$INSTALL_HOME/$FOLDER_INSTALL/$FOLDER_PACKAGES/openmm
 
-ENV_VARS_OUT=~/.bashrc
+# This installer will check for pre-existing mongod
+INSTALL_MONGODB=$INSTALL_HOME
+FOLDER_MONGODB=mongodb/
+VERSION_MONGODB=3.2.20
+
+# Task packages installed from index
+#   - openmm only listed under conda index
+#   - pandas didn't install even tho required
+#     by mdtraj
+TASK_PACKAGES='pandas pyemma==2.4'
+
+# Components installed from source
+ADAPTIVEMD_PACKAGE=jrossyra/adaptivemd.git
+ADAPTIVEMD_BRANCH=rp_integration
+#R_UTILS_PKG=radical-cybertools/radical.utils.git
+#R_UTILS_BRANCH=devel
+#R_SAGA_PKG=radical-cybertools/saga-python.git
+#R_SAGA_BRANCH=devel
+#R_PILOT_PKG=radical-cybertools/radical.pilot.git
+#R_PILOT_BRANCH=devel
+# TODO do we still need RP from repos?
+#   - remove or uncomment these guys
 
 ###############################################################################
 #                  some checks of installer variables                         #
@@ -85,6 +98,7 @@ then
   fi
 elif [ "$ENV_TYPE" == *"conda" ]
 then
+  # TODO some more will be necessary
   installeroutput "Installing AdaptiveMD in a Conda environment"
   ENV='conda create python=3.6 -n'
 else
@@ -92,6 +106,9 @@ else
   installeroutput "with the \"ENV_TYPE\" installer variable"
   exit 1
 fi
+
+# Required to use AdaptiveMD setup
+PREINSTALL="pip install pyyaml ${RADICAL_PILOT}"
 
 ###############################################################################
 #                           Install MongoDB                                   #
@@ -108,7 +125,7 @@ if [ ! -x "$(command -v mongod)" ]; then
   echo -e "\n\n#################################" >> $ENV_VARS_OUT
   echo "#    Adding MongoDB to PATH     #" >> $ENV_VARS_OUT
   echo "export PATH=${mongodb_bins}:\$PATH" >> $ENV_VARS_OUT
-  echo "export ADAPTIVEMD_DBURL=XXXXXXSTUFFFFF" >> $ENV_VARS_OUT
+  echo "export ${ENV_BASE}_DBURL=XXXXXXSTUFFFFF" >> $ENV_VARS_OUT
   echo -e "#################################\n" >> $ENV_VARS_OUT
   source $ENV_VARS_OUT
   installeroutput "MongoDB daemon installed here: "
@@ -122,7 +139,11 @@ cd $CWD
 #                           Installing Workflow Components                    #
 ###############################################################################
 
-eval  $LOAD_PYTHON
+for load in "${LOADS[@]}"
+do
+  eval $load
+done
+
 cd    $INSTALL_HOME
 mkdir $FOLDER_INSTALL
 cd    $FOLDER_INSTALL
@@ -154,22 +175,22 @@ fi
 source $ENV_VARS_OUT
 eval source \$${ENV_BASE}_ENV_ACTIVATE
 
-# Required to use installer
-pip install pyyaml
+eval $PREINSTALL
 
 mkdir $FOLDER_PROJECTS
 mkdir $FOLDER_PACKAGES
 
 # ADAPTIVEMD INSTALL
-cd    $FOLDER_INSTALL/$FOLDER_PACKAGES
-git   clone https://github.com/$ADAPTIVEMD_PKG
+cd    $FOLDER_PACKAGES
+git   clone https://github.com/$ADAPTIVEMD_PACKAGE
 cd    adaptivemd
 git   checkout $ADAPTIVEMD_BRANCH
 pip   install .
 
+pip install $TASK_PACKAGES
+
 # OPENMM INSTALL
 cd    $OPENMM_LOC/$FOLDER_OPENMM
-eval  $LOAD_CUDA
 OPENMM_CUDA_COMPILER=`which nvcc`
 
 expect -c "
@@ -185,6 +206,7 @@ expect -c "
 
 installeroutput "FOR YOUR WORKFLOW TO RUN PROPERLY, UNCOMMENT THIS LINE IN"
 installeroutput "YOUR $ENV_VARS_OUT FILE (or issue the same command in each task)"
+installeroutput "The application will only run inside its environment!"
 installeroutput "source \$${ENV_BASE}_ACTIVATE"
 
 cd $CWD

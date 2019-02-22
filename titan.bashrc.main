@@ -1,0 +1,83 @@
+# Titan Environment ---------------------------------------------->>>#
+module load python
+module load tmux
+export OMP_NUM_THREADS=12
+
+# MONGODB -------------------------------------------------------->>>#
+export PATH=/ccs/proj/bip149/admd/mongodb/mongodb-linux-x86_64-3.2.21/bin/:$PATH
+# this gets the head node ip address
+export NETDEVICE="bond0"
+export LOGIN_HOSTNAME=`ip addr show $NETDEVICE | grep -Eo '(addr:)?([0-9]*\.){3}[0-9]*' | head -n1`
+MONGOPORT=`netstat -tnulp 2> /dev/null | grep mongod | awk -F":" '{print $2}' | awk '{print $1}'`
+if [ ! -z "$MONGOPORT" ]; then
+  export ADMD_DBURL="mongodb://$LOGIN_HOSTNAME:$MONGOPORT/"
+else
+  export ADMD_DBURL="mongodb://$LOGIN_HOSTNAME:27017/"
+fi
+
+# Useful and potentially dangerous functions
+function list_mongods {
+  mongods=`ps faux | grep "mongod" | grep -v "grep"`
+  echo "Current mongod processes:"
+  printf '%s\n' "${mongods[@]}"
+}
+function kill_amongod {
+  kill `ps faux | grep "mongod" | grep -v "grep"| tail -n1 | awk '{print $2}'`
+}
+
+# Python ENV ----------------------------------------------------->>>#
+export ADMD_HOME=/ccs/proj/bip149
+export ADMD_HOME2=/lustre/atlas/proj-shared/bip149/$USER/admd
+export ADMD_ENV=$ADMD_HOME/admd/admdenv
+export ADMD_ENV_ACTIVATE=$ADMD_ENV/bin/activate
+export ADMD_ENV_DEACTIVATE="/ccs/proj/bip149/jrossyra/miniconda2/bin/deactivate"
+# RP Config ------------------------------------------------------>>>#
+export LD_PRELOAD=/lib64/librt.so.1
+export RP_ENABLE_OLD_DEFINES=True
+export RADICAL_PILOT_DBURL="${ADMD_DBURL}rp"
+export RADICAL_SAGA_PTY_VERBOSE="WARNING"
+export RADICAL_VERBOSE="WARNING"
+export RADICAL_SANDBOX=/lustre/atlas/scratch/$USER/bip149/radical.pilot.sandbox
+export RADICAL_PILOT_PROFILE="True"
+export RADICAL_PROFILE="True"
+# AdaptiveMD ----------------------------------------------------->>>#
+export ADMD_GENERATOR=$ADMD_HOME/admd/generator
+export ADMD_RUNTIME=$ADMD_GENERATOR/runtime
+#export ADMD_WORKFLOWS=$ADMD_HOME/$USER/admd/workflows
+export ADMD_WORKFLOWS=$ADMD_HOME2/workflows
+export ADMD_WORKSPACE=$ADMD_HOME2/workflows
+export ADMD_ADAPTIVEMD=$ADMD_HOME/admd/adaptivemd
+export ADMD_FILES=$ADMD_ADAPTIVEMD/examples/files
+export ADMD_DATA=/lustre/atlas/proj-shared/bip149/$USER/admd/data
+export ADMD_SANDBOX=/lustre/atlas/proj-shared/bip149/$USER/admd/data
+export ADMD_WORKERS=$ADMD_SANDBOX/workers
+export ADMD_PROJECTS=$ADMD_DATA/projects
+export ADMD_PROFILE="INFO"
+# this one is run through `eval`
+export ADMD_PLATFORM="module load cudatoolkit/7.5.18-1.0502.10743.2.1"
+# these are run through `eval`
+export ADMD_PBS_ENV="module switch PrgEnv-pgi PrgEnv-gnu"
+# PYEMMA  -------------------------------------------------------->>>#
+export PYEMMA_NJOBS=$OMP_NUM_THREADS
+# OpenMM --------------------------------------------------------->>>#
+export OPENMM_CPU_THREADS=$OMP_NUM_THREADS
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ADMD_HOME/admd/openmm/lib/plugins
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ADMD_HOME/admd/openmm/lib
+
+
+# ---------------------------------------------------------------->>>#
+# ---------------------------------------------------------------->>>#
+# OLD dataspaces used to complete BBA, Villin, Chignolin Datasets
+export ADMDRP_DATA=/lustre/atlas/proj-shared/bip149/$USER/admdrp/admdrp/
+export ADMDRP_RUNS=$ADMDRP_DATA/runs
+export ADMDRP_ENV=/lustre/atlas/proj-shared/bip149/jrossyra/admd/admdenv/
+export ADMDRP_ENV_ACTIVATE=$ADMDRP_ENV/bin/activate
+export ADMDRP_ADAPTIVEMD=/lustre/atlas/proj-shared/bip149/jrossyra/admdrp/admdrp/pkg/adaptivemd/
+
+# ---------------------------------------------------------------->>>#
+# ---------------------------------------------------------------->>>#
+export ADMD_TESTENV_ACTIVATE=/ccs/proj/bip149/admd-testRP/admdenv/bin/activate
+
+
+# MORE SUPER EXTRAS
+export PATH=$ADMD_RUNTIME:$PATH

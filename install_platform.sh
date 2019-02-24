@@ -81,6 +81,7 @@ do
   pip install $PACKAGE --no-cache-dir
 done
 
+cd $OPENMM_SOURCE
 expect -c "
   set timeout -1
   spawn sh install.sh

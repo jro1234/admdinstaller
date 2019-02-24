@@ -68,10 +68,10 @@ admin. (The current OLCF Titan installer does not link
 optimized numeric libraries and installs numpy from pip.)
 Some of these modules may be needed for AdaptiveMD, some
 only for a particular task.
-### --> OLCF Titan modules to use AdaptiveMD<br/>
+####   --> OLCF Titan modules to use AdaptiveMD<br/>
 `module load python`<br/>
 `module switch PrgEnv-pgi PrgEnv-gnu`<br/>
-###   --> OLCF Titan modules to use OpenMM inside MD task:
+####   --> OLCF Titan modules to use OpenMM inside MD task:
 `module load cudatoolkit`
 
 Task-related Environment Vars that are read by the AdaptiveMD.
@@ -183,26 +183,27 @@ function kill_amongod {
 }
 ```
 
-Change these 3, other ADMD_X vars should largely fall into line
+Change these 3, other ADMD_X vars should largely fall into line.
 Change only ADMD_NAME if rest is properly configured, and you can
 now easily switch between multiple installations of the platform.
 ```bash
 # AdaptiveMD Platform Locations ---------------------------------->>>#
 export ADMD_NAME="admd-test"
-export ADMD_SOFTWARE="/ccs/proj/bip149/$ADMD_NAME"
-export ADMD_DATA="/lustre/atlas/proj-shared/bip149/$USER/$ADMD_NAME"
+export ADMD_SOFTWARE="/ccs/proj/bip149/$USER/$ADMD_NAME"
+export ADMD_DATA="/lustre/atlas/proj-shared/bip149/$USER/$ADMD_NAME/$USER"
 
 # HPC Environment ------------------------------------------------>>>#
 module load python
 export OMP_NUM_THREADS=12
 
 # AdaptiveMD Python ENV ------------------------------------------>>>#
+export ADMD_PACKAGES="$ADMD_SOFTWARE/packages"
 export ADMD_ENV="$ADMD_SOFTWARE/admdenv"
 export ADMD_ENV_ACTIVATE="$ADMD_ENV/bin/activate"
 export ADMD_ENV_DEACTIVATE="deactivate"
-export ADMD_ADAPTIVEMD="$ADMD_SOFTWARE/adaptivemd"
+export ADMD_ADAPTIVEMD="$ADMD_PACKAGES/adaptivemd"
 export ADMD_FILES="$ADMD_ADAPTIVEMD/examples/files"
-export ADMD_GENERATOR="$ADMD_SOFTWARE/generator"
+export ADMD_GENERATOR="$ADMD_SOFTWARE/admdgenerator"
 export ADMD_RUNTIME="$ADMD_GENERATOR/runtime"
 
 # AdaptiveMD Workflow Runtime ------------------------------------>>>#
@@ -220,8 +221,8 @@ and figure out which CUDA module works with that version.
 export OPENMM_CPU_THREADS="$OMP_NUM_THREADS"
 # this one is run through `eval`
 export OPENMM_PLATFORM="module load cudatoolkit/7.5.18-1.0502.10743.2.1"
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_SOFTWARE/openmm/lib/plugins"
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_SOFTWARE/openmm/lib"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_PACKAGES/openmm/lib/plugins"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_PACKAGES/openmm/lib"
 
 # PYEMMA  -------------------------------------------------------->>>#
 export PYEMMA_NJOBS=$OMP_NUM_THREADS

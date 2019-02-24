@@ -21,7 +21,7 @@ OPENMM_SOURCE="/ccs/proj/bip149/OpenMM-7.0.1-Linux"
 #==================================================#
 # 1.1 Unload/Load Modules
 #     - can swap module for packages below
-module switch cray-libsci  cray-libsci/18.12.1
+module switch cray-libsci cray-libsci/18.12.1
 module load python
 module switch PrgEnv-pgi PrgEnv-gnu
 
@@ -67,7 +67,13 @@ cd $WORKFLOW_HOME
 git clone https://github.com/jrossyra/chignolin-wkftest.git
 
 #==================================================#
-# 5. Install task packages                         #
+# 5. CLone the Workflow Generator                  #
+#==================================================#
+cd $INSTALL_HOME
+git clone https://github.com/jrossyra/admdgenerator.git
+
+#==================================================#
+# 6. Install task packages                         #
 #==================================================#
 cd $PKG_HOME
 for PACKAGE in "${TASK_PACKAGES[@]}"
@@ -86,7 +92,7 @@ expect -c "
 "
 
 #==================================================#
-# 6. Install AdaptiveMD from source                #
+# 7. Install AdaptiveMD from source                #
 #==================================================#
 cd $PKG_HOME
 git clone https://github.com/jrossyra/adaptivemd.git
@@ -96,7 +102,7 @@ git checkout devel
 pip install .
 
 #==================================================#
-# 7. Install Radical Pilot
+# 8. Install Radical Pilot Stack from source       #
 #==================================================#
 if [ ! -z "$USE_RP" ]
 then
@@ -119,8 +125,9 @@ then
     git checkout fix/titan_deactivate
     pip install .
 fi
+
 #==================================================#
-# 8. Group Permission for using software           #
+# 9. Group Permission for using software           #
 #==================================================#
 if [ ! -z "$GROUPINSTALL" ]
 then

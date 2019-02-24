@@ -62,7 +62,8 @@ export ADMD_DATA="/lustre/atlas/proj-shared/bip149/$USER/$ADMD_NAME"
 export ADMD_ENV="$ADMD_SOFTWARE/admdenv"
 export ADMD_ENV_ACTIVATE="$ADMD_ENV/bin/activate"
 export ADMD_ENV_DEACTIVATE="deactivate"
-export ADMD_ADAPTIVEMD="$ADMD_SOFTWARE/adaptivemd"
+export ADMD_PACKAGES="$ADMD_SOFTWARE/packages"
+export ADMD_ADAPTIVEMD="$ADMD_PACKAGES/adaptivemd"
 export ADMD_FILES="$ADMD_ADAPTIVEMD/examples/files"
 export ADMD_GENERATOR="$ADMD_SOFTWARE/generator"
 export ADMD_RUNTIME="$ADMD_GENERATOR/runtime"
@@ -77,8 +78,8 @@ export ADMD_PROFILE="INFO"
 export OPENMM_CPU_THREADS="$OMP_NUM_THREADS"
 # this one is run through `eval`
 export OPENMM_PLATFORM="module load cudatoolkit/7.5.18-1.0502.10743.2.1"
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_SOFTWARE/openmm/lib/plugins"
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_SOFTWARE/openmm/lib"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_PACKAGES/openmm/lib/plugins"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADMD_PACKAGES/openmm/lib"
 
 # PYEMMA  -------------------------------------------------------->>>#
 export PYEMMA_NJOBS=$OMP_NUM_THREADS

@@ -1,6 +1,7 @@
+## Using AdaptiveMD on an HPC or Computer Cluster Resource
 To work correctly on an HPC platform requires AdaptiveMD to
 manage its workflow creation and execution given the LRMS
-(ie PBS, Slurm, etc) that distributes compute resources and
+(ie PBS, Slurm, etc) that distributes compute resources, and
 activate repeatedly and correctly in many different locations
 on the resource's internal network. Tasks will run on compute
 nodes, the workflow runtime instance on a login/head node or
@@ -15,7 +16,7 @@ and functionality from your bashrc file. On a given resource,
 different components will require different environments so
 some of these values will be overwritten by AdaptiveMD
 components downstream of your user profile from bashrc.
-More on that later ...
+More on that later...
 
 When first deploying AdaptiveMD on a new platform, you will
 have to spend some time figuring out the filesystem and
@@ -33,7 +34,7 @@ modules to load GNU and virtualenv, have different NETDEVICE,
 and only configure OpenMM on one. The commands to get a
 helpful ADMD_HOSTNAME will certainly vary by resource.
 
-```
+```bash
 ADMD_HOSTNAME=`hostname | awk -F "-" '{print $1}' | tr -d '0123456789'`
 if [ "$ADMD_HOSTNAME" = "titan" ]
 then
@@ -67,10 +68,10 @@ admin. (The current OLCF Titan installer does not link
 optimized numeric libraries and installs numpy from pip.)
 Some of these modules may be needed for AdaptiveMD, some
 only for a particular task.
- --> OLCF Titan modules to use AdaptiveMD:
-`module load python`
-`module switch PrgEnv-pgi PrgEnv-gnu`
-#   --> OLCF Titan modules to use OpenMM inside MD task:
+### --> OLCF Titan modules to use AdaptiveMD<br/>
+`module load python`<br/>
+`module switch PrgEnv-pgi PrgEnv-gnu`<br/>
+###   --> OLCF Titan modules to use OpenMM inside MD task:
 `module load cudatoolkit`
 
 Task-related Environment Vars that are read by the AdaptiveMD.
@@ -149,14 +150,12 @@ for the environment, some are required by dependencies:
  OPENMM_CPU_THREADS
 ```
 
-
-#====================================================================#
-# The logic of building MongoDB ENV VARS needs close attention when  #
-# first deploying on a platform. Workflow files should specify a     #
-# non-default (other than 27017) port number for mongod, and manage  #
-# this automatically so you can use default manually without         #
-# extra complication.                                                #
-#====================================================================#
+The logic of building MongoDB ENV VARS needs close attention when
+first deploying on a platform. Workflow files should specify a
+non-default (other than 27017) port number for mongod, and manage
+this automatically so you can use default manually without
+extra complication.
+```bash
 # MONGODB -------------------------------------------------------->>>#
 # probably need different NETDEVICE on login vs compute nodes
 export NETDEVICE="bond0"
@@ -182,12 +181,12 @@ function list_mongods {
 function kill_amongod {
   kill `ps faux | grep "mongod" | grep -v "grep"| tail -n1 | awk '{print $2}'`
 }
+```
 
-#====================================================================#
-# Change these 3, other ADMD_X vars should largely fall into line    #
-# Change only ADMD_NAME if rest is properly configured, and you can  #
-# now easily switch between multiple installations of the platform.  #
-#====================================================================#
+Change these 3, other ADMD_X vars should largely fall into line
+Change only ADMD_NAME if rest is properly configured, and you can
+now easily switch between multiple installations of the platform.
+```bash
 # AdaptiveMD Platform Locations ---------------------------------->>>#
 export ADMD_NAME="admd-test"
 export ADMD_SOFTWARE="/ccs/proj/bip149/$ADMD_NAME"
@@ -211,11 +210,12 @@ export ADMD_WORKFLOWS="$ADMD_DATA/workflows"
 export ADMD_SANDBOX="$ADMD_DATA/workers"
 export ADMD_PROJECTS="$ADMD_DATA/projects"
 export ADMD_PROFILE="INFO"
+```
 
-#====================================================================#
-# Task-related variables, these are currently read . With virtualenv you'll need to download
-# OpenMM from internet and figure out which CUDA module works with that version.
-#====================================================================#
+Task-related variables, these are currently read . With virtualenv
+you'll need to download OpenMM from internet
+and figure out which CUDA module works with that version.
+```bash
 # OpenMM --------------------------------------------------------->>>#
 export OPENMM_CPU_THREADS="$OMP_NUM_THREADS"
 # this one is run through `eval`
@@ -228,10 +228,10 @@ export PYEMMA_NJOBS=$OMP_NUM_THREADS
 
 # For convenience while working with beta version ---------------->>>#
 export PATH="$ADMD_RUNTIME:$PATH"
+```
 
-#====================================================================#
-# Config if using RP, some of these will need updating
-#====================================================================#
+Config if using RP, some of these will need updating
+```bash
 # RP Config ------------------------------------------------------>>>#
 export LD_PRELOAD="/lib64/librt.so.1"
 export RP_ENABLE_OLD_DEFINES="True"
@@ -241,5 +241,5 @@ export RADICAL_VERBOSE="WARNING"
 export RADICAL_SANDBOX="/lustre/atlas/scratch/$USER/bip149/radical.pilot.sandbox"
 export RADICAL_PILOT_PROFILE="True"
 export RADICAL_PROFILE="True"
-
+```
 

@@ -89,15 +89,20 @@ Again, additional help is available in more specific guides as listed here.
 3. In a terminal with the AdaptiveMD configurations loaded from bashrc
    (ie a fresh login or after `source ~/.bashrc`), type these commands.
    You don't need the `$ADMD_RUNTIME` bit if this directory is in your path,
-   as it will be if didn't delete this part of the example configuration.
+   as it will be if you didn't delete this part of the example configuration.
    ```bash
    cd $ADMD_WORKFLOWS/test-workflows/chignolin
    $ADMD_RUNTIME/launch_amongod.sh mongo/test
    list_mongods
-   python
    ```
    The `list_mongods` command should show you 1 current process with mongod as
-   the executable. In the python interpreter you just opened, check
+   the executable. Now, load the `virtualenv` with the Python environment where
+   we've installed this platform.
+   ```bash
+   source $ADMD_ENV_ACTIVATE
+   python
+   ```
+   In the python interpreter you just opened, check
    that your AdaptiveMD instance connects to a MongoDB:
    ```python
    import adaptivemd

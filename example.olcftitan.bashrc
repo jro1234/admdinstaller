@@ -13,7 +13,8 @@ ADMD_HOSTNAME=`hostname | awk -F "-" '{print $1}' | tr -d '0123456789'`
 if [ "$ADMD_HOSTNAME" = "titan" ]
 then
   module load tmux
-  module switch PrgEnv-pgi PrgEnv-gnu
+  module unload PrgEnv-pgi
+  module load PrgEnv-gnu
 
   export ADMD_NAME="admd-test"
   export NETDEVICE="bond0"

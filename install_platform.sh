@@ -1,192 +1,183 @@
 #!/bin/bash
-
-
-function installeroutput {
-  echo " -- AdaptiveMD INSTALLER |||  $1"
-}
-
+set -e
 CWD=`pwd`
 
+# Name for top folders of this installation
+# - install any number of envs simultanously
+#   by just chaning the name of each one here
+INSTALL_NAME="admd-test"
 
-###############################################################################
-#                           Install Configuration                             #
-# variables that set the install locations for different components of        #
-# the AdaptiveMD platform                                                     #
-###############################################################################
+####################################################
+# 0.         Configuration                         #
+####################################################
+#==================================================#
+# 0.1 Options                                      #
+#==================================================#
+# Do you need MongoDB Installed?
+# - can reuse for AdaptiveMD environments
+INSTALL_MONGO="True"
+MONGOVERSION="linux-x86_64-3.3.0"
+# True will trigger RP-Saga-RU from source
+USE_RP="False"
+# True to let other users execute software
+GROUPINSTALL="False"
 
-# The installer will check for pre-existing mongod and obort if found
-INSTALL_MONGODB=/lustre/or-hydra/cades-bsd/osz/
-FOLDER_MONGODB=mongodb/
-VERSION_MONGODB=3.3.0
-ADDRESS_MONGODB=
+#==================================================#
+# 0.2 Platform Layout on Filesystem                #
+#==================================================#
+#--------------------------------------------------#
+# 0.2.1 Change for different HPC filesystems
+#--------------------------------------------------#
+SOFTWARE_DRIVE="/ccs/proj/bip149/$USER"
+DATA_DRIVE="/lustre/atlas/proj-shared/bip149/$USER"
+# Download from simtk website, give location here
+OPENMM_SOURCE="/ccs/proj/bip149/OpenMM-7.0.1-Linux"
+#--------------------------------------------------#
+# 0.2.2 Relative layout of Platform Installation
+#--------------------------------------------------#
+INSTALL_HOME="$SOFTWARE_DRIVE/$INSTALL_NAME"
+# - note mongo is outside of the platform scope a bit
+#   since you'd typically use it globally
+MONGO_HOME="$SOFTWARE_DRIVE"
+# - could do like this to install for each platform
+#MONGO_HOME="$INSTALL_HOME"
+ENV_HOME="$INSTALL_HOME/admdenv"
+PKG_HOME="$INSTALL_HOME/packages"
+OPENMM_HOME="$PKG_HOME/openmm"
+# --> Workflow Templates & Data go here
+DATA_HOME="$DATA_DRIVE/$INSTALL_NAME"
+WORKFLOW_HOME="$DATA_HOME/workflows"
 
-# Add the adaptivemd environment variables?
-ADD_ENV_VARS=True
-ENV_LOGLEVEL=info
+#==================================================#
+# 0.3 AdaptiveMD Platform Packages preparations    #
+#==================================================#
+#--------------------------------------------------#
+# 0.3.1 Unload/Load Modules                        
+#     - can swap module for packages below        
+#--------------------------------------------------#
+module load python
+module unload PrgEnv-pgi
+module load PrgEnv-gnu
+#--------------------------------------------------#
+# 0.3.2 Packages via pip/conda
+#--------------------------------------------------#
+TASK_PACKAGES[0]="pyyaml"
+TASK_PACKAGES[1]="cython==0.29"
+TASK_PACKAGES[2]="numpy==1.15.3"
+TASK_PACKAGES[3]="scipy==1.1.0"
+TASK_PACKAGES[4]="pandas==0.23.4"
+TASK_PACKAGES[5]="mdtraj==1.9.1"
+TASK_PACKAGES[6]="pyemma==2.4"
 
-# Use virtualenv or conda? choose 1
-ENV_TYPE='virtualenv'
-
-# PREFIX to all stored environment variables
-#   - useful for multiple installations
-ENV_BASE=ADAPTIVEMD
-
-#
-INSTALL_HOME=/lustre/or-hydra/cades-bsd/$USER/
-FOLDER_INSTALL=admd/
-FOLDER_ENV=admdenv/
-FOLDER_PACKAGES=packages/
-FOLDER_PROJECTS=projects/
-
-#LOAD_PYTHON="module load python/2.7.13"
-LOAD_PYTHON="echo \"Using default Python `which python`\""
-LOAD_CUDA="module load cuda/7.5"
-#LOAD_CUDA="module load cuda/9.2"
-
-ADAPTIVEMD_PKG=jrossyra/adaptivemd.git
-ADAPTIVEMD_BRANCH=rp_integration
-
-R_UTILS_PKG=radical-cybertools/radical.utils.git
-R_UTILS_BRANCH=devel
-
-R_SAGA_PKG=radical-cybertools/saga-python.git
-R_SAGA_BRANCH=devel
-
-R_PILOT_PKG=radical-cybertools/radical.pilot.git
-R_PILOT_BRANCH=devel
-
-# USING VIRTUALENV as environment
-# User must download OpenMM-Linux precompiled binaries
-# and untar it. This just tells the script where these
-# are located on the filesystem.
-# This one came from:
-#https://simtk.org/frs/download_confirm.php/file/4904/OpenMM-7.0.1-Linux.zip?group_id=161
-OPENMM_LOC=$HOME
-FOLDER_OPENMM=OpenMM-7.0.1-Linux
-OPENMM_LIBRARY_PREFIX=lib/
-OPENMM_PLUGIN_PREFIX=lib/plugins/
-OPENMM_INSTALL_LOC=$INSTALL_HOME/$FOLDER_INSTALL/$FOLDER_PKG/openmm
-
-ENV_VARS_OUT=~/.bashrc
-
-###############################################################################
-#                  some checks of installer variables                         #
-###############################################################################
-if [ "$ENV_TYPE" == "virtualenv" ]
+####################################################
+#      INSTALLATION OPERATIONS                     #
+####################################################
+#==================================================#
+# 1. MongoDB Installation                          #
+#==================================================#
+if [ "$INSTALL_MONGO" = "True" ]
 then
-  installeroutput "Installing AdaptiveMD in a Virtualenv environment"
-  if [ -z $OPENMM_LOC ];
-  then
-    installeroutput "If using virtualenv, you must pre-download OpenMM"
-    installeroutput "binaries and give the location in the variable \"OPENMM_LOC\""
-    exit 1
-  else
-    ENV='virtualenv'
-  fi
-elif [ "$ENV_TYPE" == *"conda" ]
-then
-  installeroutput "Installing AdaptiveMD in a Conda environment"
-  ENV='conda create python=3.6 -n'
-else
-  installeroutput "Must specify to use virtualenv or conda env for installation"
-  installeroutput "with the \"ENV_TYPE\" installer variable"
-  exit 1
+    cd $MONGO_HOME
+    curl -O https://fastdl.mongodb.org/linux/mongodb-$MONGOVERSION.tgz
+    tar -zxvf mongodb-$MONGOVERSION.tgz
+    mv mongodb-$MONGOVERSION/ mongodb
+    rm mongodb-$MONGOVERSION.tgz
 fi
 
-###############################################################################
-#                           Install MongoDB                                   #
-###############################################################################
-if [ ! -x "$(command -v mongod)" ]; then
-  installeroutput "No MongoDB found, downloading version $VERSION_MONGODB"
-  cd $INSTALL_MONGODB
-  curl -O https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-$VERSION_MONGODB.tgz
-  tar -zxvf mongodb-linux-x86_64-$VERSION_MONGODB.tgz
-  mkdir $FOLDER_MONGODB
-  mv mongodb-linux-x86_64-$VERSION_MONGODB/ $FOLDER_MONGODB
-  rm mongodb-linux-x86_64-$VERSION_MONGODB.tgz
-  mongodb_bins=${INSTALL_MONGODB}/${FOLDER_MONGODB}/mongodb-linux-x86_64-$VERSION_MONGODB/bin/
-  echo -e "\n\n#################################" >> $ENV_VARS_OUT
-  echo "#    Adding MongoDB to PATH     #" >> $ENV_VARS_OUT
-  echo "export PATH=${mongodb_bins}:\$PATH" >> $ENV_VARS_OUT
-  echo "export ADAPTIVEMD_DBURL=XXXXXXSTUFFFFF" >> $ENV_VARS_OUT
-  echo -e "#################################\n" >> $ENV_VARS_OUT
-  source $ENV_VARS_OUT
-  installeroutput "MongoDB daemon installed here: "
-else
-  installeroutput "Found MongoDB already installed at: "
-fi
-installeroutput `which mongod`
-cd $CWD
+#==================================================#
+# 2. Create AdaptiveMD Platform Environment        #
+#==================================================#
+# Workflows Directory
+mkdir -p $WORKFLOW_HOME
+# Software Directory
+mkdir -p $PKG_HOME
+mkdir -p $OPENMM_HOME
 
-###############################################################################
-#                           Installing Workflow Components                    #
-###############################################################################
+#==================================================#
+# 3. Create New Virtualenv                         #
+#==================================================#
+virtualenv $ENV_HOME
+source     $ENV_HOME/bin/activate
 
-eval  $LOAD_PYTHON
-cd    $INSTALL_HOME
-mkdir $FOLDER_INSTALL
-cd    $FOLDER_INSTALL
-$ENV $INSTALL_HOME/$FOLDER_INSTALL/$FOLDER_ENV
+#==================================================#
+# 4. Clone the Chignolin Workflow Test             #
+#==================================================#
+# Workflow template with chignolin
+cd $WORKFLOW_HOME
+git clone https://github.com/jrossyra/test-workflows.git
 
-if [ "$ADD_ENV_VARS" = "True" ]
-then
-  installeroutput "Appending $ENV_VARS_OUT with AdaptiveMD workflow variables"
-  installeroutput "and LD_LIBRARY_PATH with OpenMM libraries"
-  echo -e "\n\n##############################################" >> $ENV_VARS_OUT
-  echo "#   START OF WORKFLOW ENVIRONMENT VARIABLES  #" >> $ENV_VARS_OUT
-  echo "export ${ENV_BASE}_ENV=${INSTALL_HOME}/${FOLDER_INSTALL}/${FOLDER_ENV}" >> $ENV_VARS_OUT
-  echo "export ${ENV_BASE}_ENV_ACTIVATE=\${${ENV_BASE}_ENV}/bin/activate" >> $ENV_VARS_OUT
-  echo "export ${ENV_BASE}_ENV_DEACTIVATE=deactivate" >> $ENV_VARS_OUT
-  echo "export ${ENV_BASE}_LOGLEVEL=$ENV_LOGLEVEL" >> $ENV_VARS_OUT
-  echo "export ${ENV_BASE}_SANDBOX=" >> $ENV_VARS_OUT
-  echo "export ${ENV_BASE}_PROJECTS=${INSTALL_HOME}/${FOLDER_INSTALL}/${FOLDER_PROJECTS}/" >> $ENV_VARS_OUT
-  #echo "export ${ENV_BASE}_RUNS=$INSTALL_HOME${FOLDER_}/runs/" >> ~/.bashrc
-  #echo "export ${ENV_BASE}_ADAPTIVEMD=$INSTALL_HOME$FOLDER_ADMDRP${FOLDER_ADMDRP_PKG}adaptivemd/" >> ~/.bashrc
-  echo "export ${ENV_BASE}_DATA=${INSTALL_HOME}/${FOLDER_INSTALL}" >> $ENV_VARS_OUT
-  echo "export ${ENV_BASE}_PACKAGES=${INSTALL_HOME}${FOLDER_INSTALL}/${FOLDER_PACKAGES}" >> $ENV_VARS_OUT
-  echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${OPENMM_INSTALL_LOC}/${OPENMM_PLUGIN_PREFIX}" >> $ENV_VARS_OUT
-  echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${OPENMM_INSTALL_LOC}/${OPENMM_LIBRARY_PREFIX}" >> $ENV_VARS_OUT
-  echo "#source \$${ENV_BASE}_ENV_ACTIVATE" >> $ENV_VARS_OUT
-  echo -e "##############################################\n" >> $ENV_VARS_OUT
-fi
+#==================================================#
+# 5. CLone the Workflow Generator                  #
+#==================================================#
+cd $INSTALL_HOME
+git clone https://github.com/jrossyra/admdgenerator.git
 
-# ACTIVATE ENV
-source $ENV_VARS_OUT
-eval source \$${ENV_BASE}_ENV_ACTIVATE
+#==================================================#
+# 6. Install task packages                         #
+#==================================================#
+cd $PKG_HOME
+for PACKAGE in "${TASK_PACKAGES[@]}"
+do
+  pip install $PACKAGE --no-cache-dir
+done
 
-# Required to use installer
-pip install pyyaml
-
-mkdir $FOLDER_PROJECTS
-mkdir $FOLDER_PACKAGES
-
-# ADAPTIVEMD INSTALL
-cd    $FOLDER_INSTALL/$FOLDER_PACKAGES
-git   clone https://github.com/$ADAPTIVEMD_PKG
-cd    adaptivemd
-git   checkout $ADAPTIVEMD_BRANCH
-pip   install .
-
-# OPENMM INSTALL
-cd    $OPENMM_LOC/$FOLDER_OPENMM
-eval  $LOAD_CUDA
-OPENMM_CUDA_COMPILER=`which nvcc`
-
+cd $OPENMM_SOURCE
 expect -c "
-    set timeout 100
-    spawn sh install.sh
-    expect \"Enter?install?location*\"
-    send  \"$OPENMM_INSTALL_LOC\r\"
-    expect \"Enter?path?to?Python*\"
-    send  \"\r\"
-    expect eof
-    "
+  set timeout -1
+  spawn sh install.sh
+  expect \"Enter?install?location*\"
+  send  \"$OPENMM_HOME\r\"
+  expect \"Enter?path?to?Python*\"
+  send  \"\r\"
+  expect eof
+"
 
+#==================================================#
+# 7. Install AdaptiveMD from source                #
+#==================================================#
+cd $PKG_HOME
+git clone https://github.com/jrossyra/adaptivemd.git
+cd adaptivemd
+git fetch
+git checkout devel
+pip install .
 
-installeroutput "FOR YOUR WORKFLOW TO RUN PROPERLY, UNCOMMENT THIS LINE IN"
-installeroutput "YOUR $ENV_VARS_OUT FILE (or issue the same command in each task)"
-installeroutput "source \$${ENV_BASE}_ACTIVATE"
+#==================================================#
+# 8. Install Radical Pilot Stack from source       #
+#==================================================#
+if [ "$USE_RP" = "True" ]
+then
+    cd $PKG_HOME
+    git clone https://github.com/radical-cybertools/radical.utils
+    cd radical.utils
+    pip install .
 
+    cd $PKG_HOME
+    git clone https://github.com/radical-cybertools/saga-python
+    cd saga-python
+    pip install .
+
+    cd $PKG_HOME
+    git clone https://github.com/radical-cybertools/radical.pilot
+    cd radical.pilot
+    git fetch --all
+    # TODO what is the best branch to try?
+    #      issue #1755 says this one
+    git checkout fix/titan_deactivate
+    pip install .
+fi
+
+#==================================================#
+# 9. Group Permission for using software           #
+#==================================================#
+if [ "$GROUPINSTALL" = "True" ]
+then
+    chmod -R +x $ENV_HOME
+fi
+
+#======#
+#======#
+# DONE #
+#======#
+#======#
 cd $CWD
-
-

@@ -88,7 +88,7 @@ Again, additional help is available in more specific guides as listed here.
 
 3. In a terminal with the AdaptiveMD configurations loaded from bashrc
    (ie a fresh login or after `source ~/.bashrc`), type these commands.
-   You don't need the `$ADMD_RUNTIME` bit if this directory is in your path
+   You don't need the `$ADMD_RUNTIME` bit if this directory is in your path,
    as it will be if didn't delete this part of the example configuration.
    ```bash
    cd $ADMD_WORKFLOWS/test-workflows/chignolin
@@ -107,4 +107,19 @@ Again, additional help is available in more specific guides as listed here.
    p.close()
    adaptivemd.Project.list()
    ```
-   After the initialize, the second listing should tell you `['funone']`
+   After the initialize, the second listing should tell you `['funone']`. Go
+   ahead and run a `kill_amongod` command, which safely kills your `mongod`
+   instance given that only 1 is active (otherwise you can't specify which,
+   so don't use it then unless it doesn't matter).
+4. Run a workflow test from the same location you're already at. Just do
+   ```bash
+   ./workflow-simplest.sh
+   ```
+   and watch the output. If your platform was installed successfully, this
+   should take about 10 minutes (excluding wait-time for your LRMS to schedule
+   the jobs). At the end, you should get a confirmation message saying that
+   all the AdaptiveMD tasks have been executed. There will be a lot of output
+   along the way, a couple unimportant exceptions occur. If something goes
+   terribly wrong, you won't get the final OK at the end, and most likely, the
+   workflow will either 1) terminate after an error in the runtime layer or
+   2) try rescueing tasks after execution layer failure a few times then quit.

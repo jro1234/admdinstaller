@@ -102,6 +102,9 @@ as described for the platform to run correctly.
  ADMD_FILES
       location used by the platform to look for new MD systems
 
+ ADMD_DATA
+      top location of all AdaptiveMD data (workflow logs, MD/MSM data)
+
  ADMD_GENERATOR**
       location of AdaptiveMD workflow generator scripts
 
@@ -110,12 +113,6 @@ as described for the platform to run correctly.
 
  ** these ones are part of a setup paradigm that will change
     and these current tools depracated without replacement
-
- ADMD_PROJECTS
-      location of AdaptiveMD project data
-
- ADMD_SANDBOX
-      location of task execution working directories
 
  ADMD_DBURL
       URL to look for a mongodb
@@ -139,15 +136,30 @@ platform and required to run workflows successfully. Maybe
 there is some logic in them that breaks when moving to new
 resources. This possibility should become more remote with the
 Python-based AdaptiveMD runtime that is in development now.
-Some of these vars are
-for the environment, some are required by dependencies:
+Some of these vars are for further configuring the environment,
+some are required by dependencies:
 
 ```
+ ADMD_PROJECTS
+      location of AdaptiveMD project data
+
+ ADMD_SANDBOX
+      location of task execution working directories
+
  LOGIN_HOSTNAME
+      parsed IP address based on the netdevice
+
  ADMD_DB
+      path to a MongoDB as-used by `launch_amongod.sh` runtime function
+
  DBPORT
+      port number for a MongoDB to use
+
  OPENMM_CUDA_COMPILER
+      location given by `which nvcc` for OpenMM to use with MD
+
  OPENMM_CPU_THREADS
+      number of threads for OpenMM to use
 ```
 
 The logic of building MongoDB ENV VARS needs close attention when

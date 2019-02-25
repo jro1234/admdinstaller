@@ -3,11 +3,16 @@ set -e
 CWD=`pwd`
 
 # Name for top folders of this installation
+# - install any number of envs simultanously
+#   by just chaning the name of each one here
 INSTALL_NAME="admd-test"
 
-#==================#
-#    Options       #
-#==================#
+####################################################
+# 0.         Configuration                         #
+####################################################
+#==================================================#
+# 0.1 Options                                      #
+#==================================================#
 # Do you need MongoDB Installed?
 # - can reuse for AdaptiveMD environments
 INSTALL_MONGO="True"
@@ -17,16 +22,19 @@ USE_RP="False"
 # True to let other users execute software
 GROUPINSTALL="False"
 
-#===============================#
-# Platform Layout on Filesystem #
-#===============================#
-# Change these for different HPC filesystems
+#==================================================#
+# 0.2 Platform Layout on Filesystem                #
+#==================================================#
+#--------------------------------------------------#
+# 0.2.1 Change for different HPC filesystems
+#--------------------------------------------------#
 SOFTWARE_DRIVE="/ccs/proj/bip149/$USER"
 DATA_DRIVE="/lustre/atlas/proj-shared/bip149/$USER"
 # Download from simtk website, give location here
 OPENMM_SOURCE="/ccs/proj/bip149/OpenMM-7.0.1-Linux"
-
-# Change relative layout of each Platform Installation
+#--------------------------------------------------#
+# 0.2.2 Relative layout of Platform Installation
+#--------------------------------------------------#
 INSTALL_HOME="$SOFTWARE_DRIVE/$INSTALL_NAME"
 # - note mongo is outside of the platform scope a bit
 #   since you'd typically use it globally
@@ -40,17 +48,19 @@ OPENMM_HOME="$PKG_HOME/openmm"
 DATA_HOME="$DATA_DRIVE/$INSTALL_NAME"
 WORKFLOW_HOME="$DATA_HOME/workflows"
 
-
 #==================================================#
-# 1. AdaptiveMD Platform Environment preparations  #
+# 0.3 AdaptiveMD Platform Packages preparations    #
 #==================================================#
-# 1.1 Unload/Load Modules
-#     - can swap module for packages below
+#--------------------------------------------------#
+# 0.3.1 Unload/Load Modules                        
+#     - can swap module for packages below        
+#--------------------------------------------------#
 module load python
 module unload PrgEnv-pgi
 module load PrgEnv-gnu
-
-# 1.2 Packages via pip/conda
+#--------------------------------------------------#
+# 0.3.2 Packages via pip/conda
+#--------------------------------------------------#
 TASK_PACKAGES[0]="pyyaml"
 TASK_PACKAGES[1]="cython==0.29"
 TASK_PACKAGES[2]="numpy==1.15.3"
@@ -59,13 +69,12 @@ TASK_PACKAGES[4]="pandas==0.23.4"
 TASK_PACKAGES[5]="mdtraj==1.9.1"
 TASK_PACKAGES[6]="pyemma==2.4"
 
-###########################
-# INSTALLATION OPERATIONS #
-###########################
-
-#=========================#
-# 1. MongoDB Installation #
-#=========================#
+####################################################
+#      INSTALLATION OPERATIONS                     #
+####################################################
+#==================================================#
+# 1. MongoDB Installation                          #
+#==================================================#
 if [ "$INSTALL_MONGO" = "True" ]
 then
     cd $MONGO_HOME

@@ -35,7 +35,7 @@ fi
 # MONGODB -------------------------------------------------------->>>#
 # probably need different NETDEVICE on login vs compute nodes
 export NETDEVICE="bond0"
-export PATH="$/ccs/proj/bip149/$USER/mongodb/bin/:$PATH"
+export PATH="/ccs/proj/bip149/$USER/mongodb/bin/:$PATH"
 # this should be pretty general
 export LOGIN_HOSTNAME=`ip addr show $NETDEVICE | grep -Eo '(addr:)?([0-9]*\.){3}[0-9]*' | head -n1`
 # this will give unpredictable result if more than 1 mongod running

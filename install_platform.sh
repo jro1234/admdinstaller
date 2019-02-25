@@ -95,7 +95,7 @@ source     $ENV_HOME/bin/activate
 #==================================================#
 # Workflow template with chignolin
 cd $WORKFLOW_HOME
-git clone https://github.com/jrossyra/chignolin-wkftest.git
+git clone https://github.com/jrossyra/test-workflows.git
 
 #==================================================#
 # 5. CLone the Workflow Generator                  #

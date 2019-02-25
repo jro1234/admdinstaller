@@ -140,8 +140,10 @@ Again, additional help is available in more specific guides as listed here.
    Test Workflow is complete!
    ```
    
-   There will be a lot of output
-   along the way, a couple unimportant exceptions occur. If something goes
-   terribly wrong, you won't get the final OK at the end, and most likely, the
+   There will be 10 trajectories and 1 model listed as part of the project data
+   in AdaptiveMD logs just above these lines, and a lot of additional output
+   along the way. A couple unimportant exceptions occur. If something goes
+   terribly wrong, you won't get this final OK at the end, and most likely, the
    workflow will either 1) terminate after an error in the runtime layer or
-   2) try rescueing tasks after execution layer failure a few times then quit.
+   2) try rescueing tasks after execution layer failure a few times then quit
+   with a complaint about too many rescue attempts.

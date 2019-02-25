@@ -112,10 +112,12 @@ Again, additional help is available in more specific guides as listed here.
    p.close()
    adaptivemd.Project.list()
    ```
-   After the initialize, the second listing should tell you `['funone']`. Go
+   After the initialize, the second listing should tell you `['funone']`. Now
+   quit python then go
    ahead and run a `kill_amongod` command, which safely kills your `mongod`
    instance given that only 1 is active (otherwise you can't specify which,
    so don't use it then unless it doesn't matter).
+   
 4. Run a workflow test from the same location you're already at. Just do
    ```bash
    ./workflow-simplest.sh

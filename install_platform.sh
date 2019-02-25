@@ -28,10 +28,10 @@ GROUPINSTALL="False"
 #--------------------------------------------------#
 # 0.2.1 Change for different HPC filesystems
 #--------------------------------------------------#
-SOFTWARE_DRIVE="/ccs/proj/bip149/$USER"
-DATA_DRIVE="/lustre/atlas/proj-shared/bip149/$USER"
+SOFTWARE_DRIVE="/u/sciteam/$USER"
+DATA_DRIVE="/scratch/sciteam/$USER"
 # Download from simtk website, give location here
-OPENMM_SOURCE="/ccs/proj/bip149/OpenMM-7.0.1-Linux"
+#OPENMM_SOURCE="/ccs/proj/bip149/OpenMM-7.0.1-Linux"
 #--------------------------------------------------#
 # 0.2.2 Relative layout of Platform Installation
 #--------------------------------------------------#
@@ -55,9 +55,14 @@ WORKFLOW_HOME="$DATA_HOME/workflows"
 # 0.3.1 Unload/Load Modules                        
 #     - can swap module for packages below        
 #--------------------------------------------------#
-module load python
-module unload PrgEnv-pgi
+module unload PrgEnv-cray
 module load PrgEnv-gnu
+module unload gcc
+module load gcc/5.3.0
+#module unload bwpy
+module load bwpy/2.0.1
+module load bwpy-mpi
+module add cudatoolkit
 #--------------------------------------------------#
 # 0.3.2 Packages via pip/conda
 #--------------------------------------------------#
@@ -67,7 +72,7 @@ TASK_PACKAGES[2]="numpy==1.15.3"
 TASK_PACKAGES[3]="scipy==1.1.0"
 TASK_PACKAGES[4]="pandas==0.23.4"
 TASK_PACKAGES[5]="mdtraj==1.9.1"
-TASK_PACKAGES[6]="pyemma==2.4"
+TASK_PACKAGES[6]="pyemma==2.5"
 
 ####################################################
 #      INSTALLATION OPERATIONS                     #
@@ -96,6 +101,9 @@ mkdir -p $OPENMM_HOME
 #==================================================#
 # 3. Create New Virtualenv                         #
 #==================================================#
+export EPYTHON="python2.7"
+python --version
+
 virtualenv $ENV_HOME
 source     $ENV_HOME/bin/activate
 
@@ -121,16 +129,16 @@ do
   pip install $PACKAGE --no-cache-dir
 done
 
-cd $OPENMM_SOURCE
-expect -c "
-  set timeout -1
-  spawn sh install.sh
-  expect \"Enter?install?location*\"
-  send  \"$OPENMM_HOME\r\"
-  expect \"Enter?path?to?Python*\"
-  send  \"\r\"
-  expect eof
-"
+#cd $OPENMM_SOURCE
+#expect -c "
+#  set timeout -1
+#  spawn sh install.sh
+#  expect \"Enter?install?location*\"
+#  send  \"$OPENMM_HOME\r\"
+#  expect \"Enter?path?to?Python*\"
+#  send  \"\r\"
+#  expect eof
+#"
 
 #==================================================#
 # 7. Install AdaptiveMD from source                #

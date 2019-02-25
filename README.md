@@ -128,17 +128,17 @@ Again, additional help is available in more specific guides as listed here.
    all the AdaptiveMD tasks have been executed. Something like this:
    ```
    Got Status '0' from AdaptiveMD after checking for completion of last workload
-killing Mongo DB
-/ccs/proj/bip149/jrossyra/admd-test/admdgenerator/runtime/wf_funcs.sh: line 285: wait: pid 34496 is not a child of this shell
-No incomplete/failed tasks, workload completed successfully
-AdaptiveMD Job Exit Status: 0
-Moving output logs from last workload
-Last round logs going to this folder: sessions/admd-0001.2019-02-25
-mv: cannot stat `rp.session*': No such file or directory
-Next Round Folder Name: sessions/admd-0002.2019-02-25
-Workload is complete
-Test Workflow is complete!
-```
+   killing Mongo DB
+   /ccs/proj/bip149/jrossyra/admd-test/admdgenerator/runtime/wf_funcs.sh: line 285: wait: pid 34496 is not a child of this shell
+   No incomplete/failed tasks, workload completed successfully
+   AdaptiveMD Job Exit Status: 0
+   Moving output logs from last workload
+   Last round logs going to this folder: sessions/admd-0001.2019-02-25
+   mv: cannot stat `rp.session*': No such file or directory
+   Next Round Folder Name: sessions/admd-0002.2019-02-25
+   Workload is complete
+   Test Workflow is complete!
+   ```
    
    There will be a lot of output
    along the way, a couple unimportant exceptions occur. If something goes

@@ -93,7 +93,7 @@ Again, additional help is available in more specific guides as listed here.
    ```bash
    cd $ADMD_WORKFLOWS/test-workflows/chignolin
    $ADMD_RUNTIME/launch_amongod.sh mongo/test
-   $ADMD_RUNTIME/list_mongods
+   $ADMD_RUNTIME/list_mongods.sh
    python
    ```
    The `list_mongods` command should show you 1 current process with mongod as

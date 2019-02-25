@@ -3,6 +3,11 @@
 module load python
 export OMP_NUM_THREADS=12
 
+# AdaptiveMD Platform Locations ---------------------------------->>>#
+export ADMD_NAME="admd-test"
+export ADMD_SOFTWARE="/ccs/proj/bip149/$USER/$ADMD_NAME"
+export ADMD_DATA="/lustre/atlas/proj-shared/bip149/$USER/$ADMD_NAME"
+
 ADMD_HOSTNAME=`hostname | awk -F "-" '{print $1}' | tr -d '0123456789'`
 #ADMD_HOSTNAME=$(cut -d '-' -f1 <<< `hostname`)
 if [ "$ADMD_HOSTNAME" = "titan" ]
@@ -30,7 +35,7 @@ fi
 # MONGODB -------------------------------------------------------->>>#
 # probably need different NETDEVICE on login vs compute nodes
 export NETDEVICE="bond0"
-export PATH="$ADMD_SOFTWARE/mongodb/bin/:$PATH"
+export PATH="$/ccs/proj/bip149/$USER/mongodb/bin/:$PATH"
 # this should be pretty general
 export LOGIN_HOSTNAME=`ip addr show $NETDEVICE | grep -Eo '(addr:)?([0-9]*\.){3}[0-9]*' | head -n1`
 # this will give unpredictable result if more than 1 mongod running
@@ -53,11 +58,6 @@ function kill_amongod {
   kill `ps faux | grep "mongod" | grep -v "grep"| tail -n1 | awk '{print $2}'`
 }
 
-# AdaptiveMD Platform Locations ---------------------------------->>>#
-export ADMD_NAME="admd-test"
-export ADMD_SOFTWARE="/ccs/proj/bip149/$ADMD_NAME"
-export ADMD_DATA="/lustre/atlas/proj-shared/bip149/$USER/$ADMD_NAME"
-
 # AdaptiveMD Python ENV ------------------------------------------>>>#
 export ADMD_ENV="$ADMD_SOFTWARE/admdenv"
 export ADMD_ENV_ACTIVATE="$ADMD_ENV/bin/activate"
@@ -65,7 +65,7 @@ export ADMD_ENV_DEACTIVATE="deactivate"
 export ADMD_PACKAGES="$ADMD_SOFTWARE/packages"
 export ADMD_ADAPTIVEMD="$ADMD_PACKAGES/adaptivemd"
 export ADMD_FILES="$ADMD_ADAPTIVEMD/examples/files"
-export ADMD_GENERATOR="$ADMD_SOFTWARE/generator"
+export ADMD_GENERATOR="$ADMD_SOFTWARE/admdgenerator"
 export ADMD_RUNTIME="$ADMD_GENERATOR/runtime"
 
 # AdaptiveMD Workflow Runtime ------------------------------------>>>#

@@ -1,29 +1,54 @@
 #!/bin/bash
-
 set -e
 CWD=`pwd`
 
 # Name for top folders of this installation
 INSTALL_NAME="admd-test"
-# True will trigger RP-Sage-RU from source
-USE_RP=""
-# True to let other users execute software
-GROUPINSTALL=""
 
+#==================#
+#    Options       #
+#==================#
+# Do you need MongoDB Installed?
+# - can reuse for AdaptiveMD environments
+INSTALL_MONGO="True"
+MONGOVERSION="linux-x86_64-3.3.0"
+# True will trigger RP-Saga-RU from source
+USE_RP="False"
+# True to let other users execute software
+GROUPINSTALL="False"
+
+#===============================#
+# Platform Layout on Filesystem #
+#===============================#
 # Change these for different HPC filesystems
 SOFTWARE_DRIVE="/ccs/proj/bip149/$USER"
 DATA_DRIVE="/lustre/atlas/proj-shared/bip149/$USER"
 # Download from simtk website, give location here
 OPENMM_SOURCE="/ccs/proj/bip149/OpenMM-7.0.1-Linux"
 
+# Change relative layout of each Platform Installation
+INSTALL_HOME="$SOFTWARE_DRIVE/$INSTALL_NAME"
+# - note mongo is outside of the platform scope a bit
+#   since you'd typically use it globally
+MONGO_HOME="$SOFTWARE_DRIVE"
+# - could do like this to install for each platform
+#MONGO_HOME="$INSTALL_HOME"
+ENV_HOME="$INSTALL_HOME/admdenv"
+PKG_HOME="$INSTALL_HOME/packages"
+OPENMM_HOME="$PKG_HOME/openmm"
+# --> Workflow Templates & Data go here
+DATA_HOME="$DATA_DRIVE/$INSTALL_NAME"
+WORKFLOW_HOME="$DATA_HOME/workflows"
+
+
 #==================================================#
 # 1. AdaptiveMD Platform Environment preparations  #
 #==================================================#
 # 1.1 Unload/Load Modules
 #     - can swap module for packages below
-module switch cray-libsci cray-libsci/18.12.1
 module load python
-module switch PrgEnv-pgi PrgEnv-gnu
+module unload PrgEnv-pgi
+module load PrgEnv-gnu
 
 # 1.2 Packages via pip/conda
 TASK_PACKAGES[0]="pyyaml"
@@ -34,15 +59,21 @@ TASK_PACKAGES[4]="pandas==0.23.4"
 TASK_PACKAGES[5]="mdtraj==1.9.1"
 TASK_PACKAGES[6]="pyemma==2.4"
 
-# 1.3 Configure Location Paths
-# --> Software stack goes here
-INSTALL_HOME="$SOFTWARE_DRIVE/$INSTALL_NAME"
-ENV_HOME="$INSTALL_HOME/admdenv"
-PKG_HOME="$INSTALL_HOME/packages"
-OPENMM_HOME="$PKG_HOME/openmm"
-# --> Workflow Templates & Data go here
-DATA_HOME="$DATA_DRIVE/$INSTALL_NAME"
-WORKFLOW_HOME="$DATA_HOME/workflows"
+###########################
+# INSTALLATION OPERATIONS #
+###########################
+
+#=========================#
+# 1. MongoDB Installation #
+#=========================#
+if [ "$INSTALL_MONGO" = "True" ]
+then
+    cd $MONGO_HOME
+    curl -O https://fastdl.mongodb.org/linux/mongodb-$MONGOVERSION.tgz
+    tar -zxvf mongodb-$MONGOVERSION.tgz
+    mv mongodb-$MONGOVERSION/ mongodb
+    rm mongodb-$MONGOVERSION.tgz
+fi
 
 #==================================================#
 # 2. Create AdaptiveMD Platform Environment        #
@@ -105,7 +136,7 @@ pip install .
 #==================================================#
 # 8. Install Radical Pilot Stack from source       #
 #==================================================#
-if [ ! -z "$USE_RP" ]
+if [ "$USE_RP" = "True" ]
 then
     cd $PKG_HOME
     git clone https://github.com/radical-cybertools/radical.utils
@@ -130,7 +161,7 @@ fi
 #==================================================#
 # 9. Group Permission for using software           #
 #==================================================#
-if [ ! -z "$GROUPINSTALL" ]
+if [ "$GROUPINSTALL" = "True" ]
 then
     chmod -R +x $ENV_HOME
 fi

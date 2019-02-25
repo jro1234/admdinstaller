@@ -50,12 +50,12 @@ load a python numpy module (often called "python_numpy").
 Consider these things, * means required:
  - Modules available for any functionality (look through installer and compare to list from "module avail" command)
  - Location of gnu compilers
- * MongoDB version 3 compatibility (test older/unencrypted versions in case of library problems)
- * CUDA module/build location for OpenMM
- * Filesystem location for software
- * Filesystem location for data
- * Is Radical Pilot (RP) configured on this resource?
- * Installing for User, or Group of users?
+ - * MongoDB version 3 compatibility (test older/unencrypted versions in case of library problems)
+ - * CUDA module/build location for OpenMM
+ - * Filesystem location for software
+ - * Filesystem location for data
+ - * Is Radical Pilot (RP) configured on this resource?
+ - * Installing for User, or Group of users?
 
 #### Check back on the considerations above before starting!
 To run the installer, make sure to first run through the script
@@ -87,14 +87,16 @@ Again, additional help is available in more specific guides as listed here.
      a functioning AdaptiveMD Platform.
 
 3. In a terminal with the AdaptiveMD configurations loaded from bashrc
-   (ie a fresh login or after `source ~/.bashrc`,
+   (ie a fresh login or after `source ~/.bashrc`), type these commands.
+   You don't need the `$ADMD_RUNTIME` bit if this directory is in your path
+   as it will be if didn't delete this part of the example configuration.
    ```bash
    cd $ADMD_WORKFLOWS/test-workflows/chignolin
    $ADMD_RUNTIME/launch_amongod.sh mongo/test
-   list_mongods
+   $ADMD_RUNTIME/list_mongods
    python
    ```
-   The `list_mongods` command should show you 1 process with mongod as
+   The `list_mongods` command should show you 1 current process with mongod as
    the executable. In the python interpreter you just opened, check
    that your AdaptiveMD instance connects to a MongoDB:
    ```python

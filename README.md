@@ -77,7 +77,7 @@ Again, additional help is available in more specific guides as listed here.
      installer to create a new AdaptiveMD Workflow Platform.
 
 2. Add the "AdaptiveMD-Platform" setup to your (preferebly otherwise empty)
-   bashrc. You should not need to modify many of the environment variables,
+   bashrc. You should not need to modify many of the "ADMD_XXX" environment variables,
    the top ones change the global configuration for a platform instance,
    and the rest are all
    creating an internal structure that should not need any modification.

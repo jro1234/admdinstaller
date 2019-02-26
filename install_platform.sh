@@ -63,16 +63,21 @@ module load gcc/5.3.0
 module load bwpy/2.0.1
 module load bwpy-mpi
 module add cudatoolkit
+export MODULEPATH="/sw/bw/bwpy/modulefiles/:${MODULEPATH}"
+export LIBRARY_PATH="${BWPY_LIBRARY_PATH}"
+export CPATH="${BWPY_INCLUDE_PATH}"
+export LDFLAGS="${LDFLAGS} -Wl,--rpath=${BWPY_LIBRARY_PATH}"
 #--------------------------------------------------#
 # 0.3.2 Packages via pip/conda
 #--------------------------------------------------#
 TASK_PACKAGES[0]="pyyaml"
 TASK_PACKAGES[1]="cython==0.29"
-TASK_PACKAGES[2]="numpy==1.15.3"
-TASK_PACKAGES[3]="scipy==1.1.0"
-TASK_PACKAGES[4]="pandas==0.23.4"
-TASK_PACKAGES[5]="mdtraj==1.9.1"
-TASK_PACKAGES[6]="pyemma==2.5"
+#TASK_PACKAGES[2]="numpy==1.15.3"
+#TASK_PACKAGES[3]="scipy==1.1.0"
+TASK_PACKAGES[2]="bypind11"
+TASK_PACKAGES[3]="pandas==0.23.4"
+TASK_PACKAGES[4]="mdtraj==1.9.1"
+TASK_PACKAGES[5]="pyemma==2.5.4"
 
 ####################################################
 #      INSTALLATION OPERATIONS                     #
@@ -104,7 +109,7 @@ mkdir -p $OPENMM_HOME
 export EPYTHON="python2.7"
 python --version
 
-virtualenv $ENV_HOME
+virtualenv --system-site-packages $ENV_HOME
 source     $ENV_HOME/bin/activate
 
 #==================================================#
@@ -148,7 +153,7 @@ git clone https://github.com/jrossyra/adaptivemd.git
 cd adaptivemd
 git fetch
 git checkout devel
-pip install .
+pip install . --no-cache-dir
 
 #==================================================#
 # 8. Install Radical Pilot Stack from source       #
@@ -158,21 +163,21 @@ then
     cd $PKG_HOME
     git clone https://github.com/radical-cybertools/radical.utils
     cd radical.utils
-    pip install .
+    pip install . --no-cache-dir 
 
     cd $PKG_HOME
     git clone https://github.com/radical-cybertools/saga-python
     cd saga-python
-    pip install .
+    pip install . --no-cache-dir
 
     cd $PKG_HOME
     git clone https://github.com/radical-cybertools/radical.pilot
     cd radical.pilot
-    git fetch --all
+    git fetch --all 
     # TODO what is the best branch to try?
     #      issue #1755 says this one
     git checkout fix/titan_deactivate
-    pip install .
+    pip install . --no-cache-dir
 fi
 
 #==================================================#
